@@ -99,82 +99,83 @@ if page.status_code==200:
 
 
              # Find the paragraph element by class name
-            job_response = requests.get(job_link)
-            job_soup = BeautifulSoup(job_response.content, 'html.parser')
+            if not Jobs.objects.filter(link=job_link).exists():
+                job_response = requests.get(job_link)
+                job_soup = BeautifulSoup(job_response.content, 'html.parser')
 
-            Job_function_name=job_soup.find('div',class_='w-full text-gray-500').find('h2',class_='text-sm font-normal').find('a').get_text(strip=True)
+                Job_function_name=job_soup.find('div',class_='w-full text-gray-500').find('h2',class_='text-sm font-normal').find('a').get_text(strip=True)
 
-            jtype=job_soup.find('div',class_='mt-3')
-            location_name=jtype.find('a',class_='text-sm font-normal px-3 rounded bg-brand-secondary-50 mr-2 mb-3 inline-block').get_text(strip=True)
-            jtyp=job_soup.find('div',class_='w-full text-gray-500')
-            Industry_name=jtyp.find_all('div')[1].find('a',class_='text-sm font-normal px-3 rounded bg-brand-secondary-50 mr-2 mb-3 inline-block').get_text(strip=True)
+                jtype=job_soup.find('div',class_='mt-3')
+                location_name=jtype.find('a',class_='text-sm font-normal px-3 rounded bg-brand-secondary-50 mr-2 mb-3 inline-block').get_text(strip=True)
+                jtyp=job_soup.find('div',class_='w-full text-gray-500')
+                Industry_name=jtyp.find_all('div')[1].find('a',class_='text-sm font-normal px-3 rounded bg-brand-secondary-50 mr-2 mb-3 inline-block').get_text(strip=True)
 
-            location, _ = Location.objects.get_or_create(location=location_name)
-            job_type, _ = Type.objects.get_or_create(time=job_type_name)
-            job_function, _ = JobFunctions.objects.get_or_create(jobFunction=Job_function_name)
-            industry, _ = Industries.objects.get_or_create(industry=Industry_name)
-            jb_image = JbImage(job_images=img_src)  # Create a new JbImage instance
-            jb_image.save()
+                location, _ = Location.objects.get_or_create(location=location_name)
+                job_type, _ = Type.objects.get_or_create(time=job_type_name)
+                job_function, _ = JobFunctions.objects.get_or_create(jobFunction=Job_function_name)
+                industry, _ = Industries.objects.get_or_create(industry=Industry_name)
+                jb_image = JbImage(job_images=img_src)  # Create a new JbImage instance
+                jb_image.save()
 
-            new_job = Jobs(
-            title=job_title,
-            link=job_link,
-            date_posted=job_date,
-            location=location,
-            job_type=job_type,
-            job_payment= payments,
-            jb_images=jb_image,
-            job_function=job_function,
-            industries=industry)
+                new_job = Jobs(
+                title=job_title,
+                link=job_link,
+                date_posted=job_date,
+                location=location,
+                job_type=job_type,
+                job_payment= payments,
+                jb_images=jb_image,
+                job_function=job_function,
+                industries=industry)
 
-            new_job.save()
+                new_job.save()
 
 
-            summary=job_soup.find('div',class_='py-5 px-4 border-b border-gray-300 md:p-5')
-            if summary.find('h3').get_text():
-                det=JobDetail()
-                det.job=new_job
-                det.details=summary.find('h3').get_text()
-                det.save()
-            if summary.find('p').get_text():
-                det=JobDetail()
-                det.job=new_job
-                det.details=summary.find('p').get_text()
-                det.save()
-            qualification = summary.find('ul')
-            if qualification:
-
-                # qualifications = []
-                qualifications_elements = qualification.find_all('li')
-                for qual_element in qualifications_elements:
-                    det = JobDetail()
-                    det.job = new_job
-                    det.details=qual_element.get_text()
+                summary=job_soup.find('div',class_='py-5 px-4 border-b border-gray-300 md:p-5')
+                if summary.find('h3').get_text():
+                    det=JobDetail()
+                    det.job=new_job
+                    det.details=summary.find('h3').get_text()
                     det.save()
-            descrip = job_soup.find('div', class_='text-sm text-gray-500')
-            paragraphs=descrip.find_all('p')
-            for paragraph in paragraphs:
-                bold_tag =paragraph.find_all('b')
-                content=paragraph.get_text()
-                if bold_tag:
-                    job_detail = JobDetail(job=new_job, details=content,bold=True)
-                else:
-                    job_detail = JobDetail(job=new_job, details=content,bold=False)
-                job_detail.save()
+                if summary.find('p').get_text():
+                    det=JobDetail()
+                    det.job=new_job
+                    det.details=summary.find('p').get_text()
+                    det.save()
+                qualification = summary.find('ul')
+                if qualification:
 
-                next_sibling = paragraph.find_next_sibling()
+                    # qualifications = []
+                    qualifications_elements = qualification.find_all('li')
+                    for qual_element in qualifications_elements:
+                        det = JobDetail()
+                        det.job = new_job
+                        det.details=qual_element.get_text()
+                        det.save()
+                descrip = job_soup.find('div', class_='text-sm text-gray-500')
+                paragraphs=descrip.find_all('p')
+                for paragraph in paragraphs:
+                    bold_tag =paragraph.find_all('b')
+                    content=paragraph.get_text()
+                    if bold_tag:
+                        job_detail = JobDetail(job=new_job, details=content,bold=True)
+                    else:
+                        job_detail = JobDetail(job=new_job, details=content,bold=False)
+                    job_detail.save()
 
-                if next_sibling and next_sibling.name == 'ul':
-                    ul_tag = paragraph.find_next_sibling('ul')
-                    if ul_tag:
-                        cont1 = ''
-                        for li in ul_tag.find_all('li'):
-                            cont1 = li.text.strip()
-                            # content+=cont1
-                            # content += ' :   ' + cont1
-                            content = cont1
-                            job_detail1 = JobDetail(job=new_job, details=content,)
-                            job_detail1.save()
+                    next_sibling = paragraph.find_next_sibling()
+
+                    if next_sibling and next_sibling.name == 'ul':
+                        ul_tag = paragraph.find_next_sibling('ul')
+                        if ul_tag:
+                            cont1 = ''
+                            for li in ul_tag.find_all('li'):
+                                cont1 = li.text.strip()
+                                # content+=cont1
+                                # content += ' :   ' + cont1
+                                content = cont1
+                                job_detail1 = JobDetail(job=new_job, details=content,)
+                                job_detail1.save()
 
 class JobViewSet(viewsets.ModelViewSet):
     serializer_class = JobSerializer
