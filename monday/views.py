@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 # Create your views here.
 url='https://www.brightermonday.co.ke/jobs'
+img ='https://www.brightermonday.co.ke'
 
 page = requests.get(url)
 if page.status_code==200:
@@ -87,7 +88,8 @@ if page.status_code==200:
 
             job_image= wen.find('img')
             if job_image:
-               img_src = job_image.get('src')
+               img_sr = job_image.get('src')
+               img_src=img+img_sr
                if img_src is None:
                    img_src=''
             else:

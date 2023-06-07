@@ -14,7 +14,7 @@ class Location(models.Model):
     location=models.TextField(max_length=200)
 
 class JbImage(models.Model):
-    job_images = models.CharField(max_length=1000)
+    job_images = models.URLField(max_length=1000)
 
     
 class Type(models.Model):
