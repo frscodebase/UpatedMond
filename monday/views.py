@@ -90,7 +90,7 @@ if page.status_code==200:
             job_image= wen.find('img')
             if job_image:
                img_sr = job_image.get('src')
-               sliced_img_sri = img_sr[1:9]
+               sliced_img_sri = img_sr[:8]
                if sliced_img_sri == win:
                    img_src = img_sr
                else:
@@ -119,7 +119,7 @@ if page.status_code==200:
                 job_type, _ = Type.objects.get_or_create(time=job_type_name)
                 job_function, _ = JobFunctions.objects.get_or_create(jobFunction=Job_function_name)
                 industry, _ = Industries.objects.get_or_create(industry=Industry_name)
-                jb_image = JbImage(job_images=img_src)  # Create a new JbImage instance
+                jb_image = JbImage(job_images=img_src)  # Create  new JbImage instance
                 jb_image.save()
 
                 new_job = Jobs(
